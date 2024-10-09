@@ -1,0 +1,29 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+     # 设置 Docker Hub 凭证为环境变量
+    - name: Log in to Docker Hub
+      run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+    
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag devdocs:latest
+
+    # 将镜像推送到 Docker Hub
+    - name: Push Docker image to Docker Hub
+      run: |
+        docker tag devdocs:latest ${{ secrets.DOCKERHUB_USERNAME }}/devdocs:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/devdocs:latest
